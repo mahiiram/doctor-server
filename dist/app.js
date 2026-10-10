@@ -15,33 +15,29 @@ app.use((0, cors_1.default)());
 app.use((0, cookie_parser_1.default)());
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
-app.use(express_1.default.static('public'));
-app.get('/favicon.ico', (req, res) => {
+app.use(express_1.default.static("public"));
+app.get("/favicon.ico", (req, res) => {
     res.status(204).end();
 });
-app.get('/', (req, res) => {
+app.get("/", (req, res) => {
     res.send(config_1.default.clientUrl);
 });
-app.use('/api/v1', routes_1.default);
+app.use("/api/v1", routes_1.default);
 app.use((err, req, res, next) => {
     if (res.headersSent) {
         return next(err);
     }
-    console.error('[api error]', req.method, req.originalUrl, err);
+    console.error("[api error]", req.method, req.originalUrl, err);
     if (err instanceof apiError_1.default) {
-        return res
-            .status(err.statusCode)
-            .json({ success: false, message: err.message });
+        return res.status(err.statusCode).json({ success: false, message: err.message });
     }
     const e = err;
-    const statusCode = typeof e.statusCode === 'number' && e.statusCode >= 400 && e.statusCode < 600
+    const statusCode = typeof e.statusCode === "number" && e.statusCode >= 400 && e.statusCode < 600
         ? e.statusCode
         : http_status_1.default.INTERNAL_SERVER_ERROR;
     const body = {
         success: false,
-        message: config_1.default.showErrorDetails
-            ? e.message || String(err)
-            : 'Something Went Wrong',
+        message: config_1.default.showErrorDetails ? e.message || String(err) : "Something Went Wrong",
     };
     if (config_1.default.showErrorDetails && e.stack) {
         body.stack = e.stack;

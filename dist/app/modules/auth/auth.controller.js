@@ -26,13 +26,13 @@ const Login = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, 
     const result = yield auth_service_1.AuthService.loginUser(req.body);
     const { accessToken } = result;
     const cookieOptions = {
-        secure: config_1.default.env === 'production',
-        httpOnly: true
+        secure: config_1.default.env === "production",
+        httpOnly: true,
     };
-    res.cookie('accessToken', accessToken, cookieOptions);
+    res.cookie("accessToken", accessToken, cookieOptions);
     (0, sendResponse_1.default)(res, {
         statusCode: 200,
-        message: 'Successfully Logged !!',
+        message: "Successfully Logged !!",
         success: true,
         data: result,
     });
@@ -41,7 +41,7 @@ const resetPassword = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, 
     const result = yield auth_service_1.AuthService.resetPassword(req.body);
     (0, sendResponse_1.default)(res, {
         statusCode: 200,
-        message: 'Successfully Passwrod Reset!!',
+        message: "Successfully Passwrod Reset!!",
         success: true,
         data: result,
     });
@@ -50,7 +50,7 @@ const PasswordResetConfirm = (0, catchAsync_1.default)((req, res) => __awaiter(v
     const result = yield auth_service_1.AuthService.PassworResetConfirm(req.body);
     (0, sendResponse_1.default)(res, {
         statusCode: 200,
-        message: 'Successfully Passwrod Changed!!',
+        message: "Successfully Passwrod Changed!!",
         success: true,
         data: result,
     });
@@ -59,16 +59,16 @@ const VerifyUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, voi
     const { userId } = req.params;
     const isUserExist = yield prisma_1.default.doctor.findUnique({
         where: {
-            id: userId
-        }
+            id: userId,
+        },
     });
     if (!isUserExist) {
         throw new apiError_1.default(http_status_1.default.NOT_FOUND, "User is not found !!");
     }
     const getVerficationUser = yield prisma_1.default.userVerfication.findFirst({
         where: {
-            userId: userId
-        }
+            userId: userId,
+        },
     });
     if (getVerficationUser) {
         const expiresAt = (0, moment_1.default)(getVerficationUser.expiresAt);
@@ -79,22 +79,22 @@ const VerifyUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, voi
             yield prisma_1.default.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
                 yield tx.doctor.update({
                     where: {
-                        id: isUserExist.id
+                        id: isUserExist.id,
                     },
                     data: {
-                        verified: true
-                    }
+                        verified: true,
+                    },
                 });
                 yield tx.userVerfication.delete({
                     where: {
-                        id: getVerficationUser.id
-                    }
+                        id: getVerficationUser.id,
+                    },
                 });
             }));
-            res.redirect('/api/v1/auth/verified');
+            res.redirect("/api/v1/auth/verified");
         }
         else {
-            res.redirect('/api/v1/auth/expired/link');
+            res.redirect("/api/v1/auth/expired/link");
         }
     }
 }));
@@ -110,5 +110,5 @@ exports.AuthController = {
     Verified,
     VerficationExpired,
     resetPassword,
-    PasswordResetConfirm
+    PasswordResetConfirm,
 };

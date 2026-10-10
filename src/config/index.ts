@@ -14,7 +14,6 @@ export default {
   env: process.env.NODE_ENV,
   showErrorDetails,
   port: process.env.PORT,
-  default_doctor_pass: process.env.DOCTOR_PASS,
   clientUrl: clientUrl,
   jwt: {
     secret: process.env.JWT_SCRET,

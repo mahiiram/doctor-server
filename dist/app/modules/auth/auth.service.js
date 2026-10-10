@@ -54,22 +54,22 @@ const jwtHelper_1 = require("../../../helpers/jwtHelper");
 const config_1 = __importDefault(require("../../../config"));
 const moment_1 = __importDefault(require("moment"));
 const emailTransporter_1 = require("../../../helpers/emailTransporter");
-const { v4: uuidv4 } = require('uuid');
+const { v4: uuidv4 } = require("uuid");
 const path = __importStar(require("path"));
 const loginUser = (user) => __awaiter(void 0, void 0, void 0, function* () {
     const { email: IEmail, password } = user;
     const isUserExist = yield prisma_1.default.auth.findUnique({
-        where: { email: IEmail }
+        where: { email: IEmail },
     });
     if (!isUserExist) {
         throw new apiError_1.default(http_status_1.default.NOT_FOUND, "User is not Exist !");
     }
     // check Verified doctor or not
-    if (isUserExist.role === 'doctor') {
+    if (isUserExist.role === "doctor") {
         const getDoctorInfo = yield prisma_1.default.doctor.findUnique({
             where: {
-                email: isUserExist.email
-            }
+                email: isUserExist.email,
+            },
         });
         if (getDoctorInfo && (getDoctorInfo === null || getDoctorInfo === void 0 ? void 0 : getDoctorInfo.verified) === false) {
             throw new apiError_1.default(http_status_1.default.NOT_FOUND, "Please Verify Your Email First !");
@@ -80,16 +80,16 @@ const loginUser = (user) => __awaiter(void 0, void 0, void 0, function* () {
         throw new apiError_1.default(http_status_1.default.NOT_FOUND, "Password is not Matched !");
     }
     const { role, userId, isDemo, email } = isUserExist;
-    const accessToken = jwtHelper_1.JwtHelper.createToken({ role, userId, email, isDemo: role === 'admin' ? Boolean(isDemo) : false }, config_1.default.jwt.secret, config_1.default.jwt.JWT_EXPIRES_IN);
+    const accessToken = jwtHelper_1.JwtHelper.createToken({ role, userId, email, isDemo: role === "admin" ? Boolean(isDemo) : false }, config_1.default.jwt.secret, config_1.default.jwt.JWT_EXPIRES_IN);
     return {
         accessToken,
-        user: { role, userId, email, isDemo: role === 'admin' ? Boolean(isDemo) : false },
+        user: { role, userId, email, isDemo: role === "admin" ? Boolean(isDemo) : false },
     };
 });
 const VerificationUser = (user) => __awaiter(void 0, void 0, void 0, function* () {
     const { email: IEmail, password } = user;
     const isUserExist = yield prisma_1.default.auth.findUnique({
-        where: { email: IEmail }
+        where: { email: IEmail },
     });
     if (!isUserExist) {
         throw new apiError_1.default(http_status_1.default.NOT_FOUND, "User is not Exist !");
@@ -99,16 +99,16 @@ const VerificationUser = (user) => __awaiter(void 0, void 0, void 0, function* (
         throw new apiError_1.default(http_status_1.default.NOT_FOUND, "Password is not Matched !");
     }
     const { role, userId, isDemo, email } = isUserExist;
-    const accessToken = jwtHelper_1.JwtHelper.createToken({ role, userId, email, isDemo: role === 'admin' ? Boolean(isDemo) : false }, config_1.default.jwt.secret, config_1.default.jwt.JWT_EXPIRES_IN);
+    const accessToken = jwtHelper_1.JwtHelper.createToken({ role, userId, email, isDemo: role === "admin" ? Boolean(isDemo) : false }, config_1.default.jwt.secret, config_1.default.jwt.JWT_EXPIRES_IN);
     return {
         accessToken,
-        user: { role, userId, email, isDemo: role === 'admin' ? Boolean(isDemo) : false },
+        user: { role, userId, email, isDemo: role === "admin" ? Boolean(isDemo) : false },
     };
 });
 const resetPassword = (payload) => __awaiter(void 0, void 0, void 0, function* () {
     const { email } = payload;
     const isUserExist = yield prisma_1.default.auth.findUnique({
-        where: { email: email }
+        where: { email: email },
     });
     if (!isUserExist) {
         throw new apiError_1.default(http_status_1.default.NOT_FOUND, "User is not Exist !");
@@ -116,31 +116,31 @@ const resetPassword = (payload) => __awaiter(void 0, void 0, void 0, function* (
     const clientUrl = `${config_1.default.clientUrl}/reset-password/`;
     const uniqueString = uuidv4() + isUserExist.id;
     const uniqueStringHashed = yield bcrypt_1.default.hashSync(uniqueString, 12);
-    const encodedUniqueStringHashed = uniqueStringHashed.replace(/\//g, '-');
-    const resetLink = clientUrl + isUserExist.id + '/' + encodedUniqueStringHashed;
+    const encodedUniqueStringHashed = uniqueStringHashed.replace(/\//g, "-");
+    const resetLink = clientUrl + isUserExist.id + "/" + encodedUniqueStringHashed;
     const currentTime = (0, moment_1.default)();
-    const expiresTime = (0, moment_1.default)(currentTime).add(4, 'hours');
+    const expiresTime = (0, moment_1.default)(currentTime).add(4, "hours");
     yield prisma_1.default.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
         //Check if the forgotPassword record exists before attempting reset
         const existingForgotPassword = yield tx.forgotPassword.findUnique({
-            where: { id: isUserExist.id }
+            where: { id: isUserExist.id },
         });
         if (existingForgotPassword) {
             yield tx.forgotPassword.delete({
-                where: { id: isUserExist.id }
+                where: { id: isUserExist.id },
             });
         }
         const forgotPassword = yield tx.forgotPassword.create({
             data: {
                 userId: isUserExist.id,
                 expiresAt: expiresTime.toDate(),
-                uniqueString: resetLink
-            }
+                uniqueString: resetLink,
+            },
         });
         if (forgotPassword) {
-            const pathName = path.join(__dirname, '../../../../template/resetPassword.html');
+            const pathName = path.join(__dirname, "../../../../template/resetPassword.html");
             const obj = {
-                link: resetLink
+                link: resetLink,
             };
             const subject = "Request to Reset Password";
             const toMail = isUserExist.email;
@@ -155,30 +155,28 @@ const resetPassword = (payload) => __awaiter(void 0, void 0, void 0, function* (
         return forgotPassword;
     }));
     return {
-        message: "Password Reset Successfully !!"
+        message: "Password Reset Successfully !!",
     };
 });
 const PassworResetConfirm = (payload) => __awaiter(void 0, void 0, void 0, function* () {
     const { userId, uniqueString, password } = payload;
     yield prisma_1.default.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
         const isUserExist = yield tx.auth.findUnique({
-            where: { id: userId }
+            where: { id: userId },
         });
         if (!isUserExist) {
             throw new apiError_1.default(http_status_1.default.NOT_FOUND, "User is not Exist !");
         }
-        ;
         const resetLink = `${config_1.default.clientUrl}/reset-password/${isUserExist.id}/${uniqueString}`;
         const getForgotRequest = yield tx.forgotPassword.findFirst({
             where: {
                 userId: userId,
-                uniqueString: resetLink
-            }
+                uniqueString: resetLink,
+            },
         });
         if (!getForgotRequest) {
             throw new apiError_1.default(http_status_1.default.NOT_FOUND, "Forgot Request was not found or Invalid !");
         }
-        ;
         const expiresAt = (0, moment_1.default)(getForgotRequest.expiresAt);
         const currentTime = (0, moment_1.default)();
         if (expiresAt.isBefore(currentTime)) {
@@ -187,26 +185,26 @@ const PassworResetConfirm = (payload) => __awaiter(void 0, void 0, void 0, funct
         else {
             yield tx.auth.update({
                 where: {
-                    id: userId
+                    id: userId,
                 },
                 data: {
-                    password: password && (yield bcrypt_1.default.hashSync(password, 12))
-                }
+                    password: password && (yield bcrypt_1.default.hashSync(password, 12)),
+                },
             });
             yield prisma_1.default.forgotPassword.delete({
                 where: {
-                    id: getForgotRequest.id
-                }
+                    id: getForgotRequest.id,
+                },
             });
         }
     }));
     return {
-        message: "Password Changed Successfully !!"
+        message: "Password Changed Successfully !!",
     };
 });
 exports.AuthService = {
     loginUser,
     VerificationUser,
     resetPassword,
-    PassworResetConfirm
+    PassworResetConfirm,
 };
